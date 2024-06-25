@@ -36,6 +36,29 @@ def get_store(id: str):
     except KeyError:
         abort(404, message="Store not found")
 
+@app.put("/stores/<string:id>")
+def update_store(id: str):
+    store_data = request.get_json()
+
+    if "name" not in store_data:
+        abort(400, message="Bad request. Ensure 'name' field is present.")
+
+    try:
+        store = stores[id]
+        store |= store_data
+
+        return store, 201
+    except KeyError:
+        abort(404, message="Item not found")
+
+@app.delete("/stores/<string:id>")
+def delete_store(id: str):
+    try:
+        del stores[id]
+        return {"message": "Store deleted"}
+    except KeyError:
+        abort(404, message="Store not found")
+
 @app.get("/items")
 def get_all_items():
     return {"items": list(items.values())}
@@ -67,5 +90,29 @@ def get_item(id: str):
 
     try:
         return items[id]
+    except KeyError:
+        abort(404, message="Item not found")
+
+@app.delete("/items/<string:id>")
+def delete_item(id: str):
+
+    try:
+        del items[id]
+        return {"message": "Item deleted"}
+    except KeyError:
+        abort(404, message="Item not found")
+
+@app.put("/items/<string:itemId>")
+def update_item(itemId: str):
+    item_data = request.get_json()
+
+    if "price" not in item_data or "name" not in item_data:
+        abort(400, message="Bad request. Ensure 'price' and 'name' fields are present.")
+
+    try:
+        item = items[itemId]
+        item |= item_data
+
+        return item, 201
     except KeyError:
         abort(404, message="Item not found")

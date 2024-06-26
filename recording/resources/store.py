@@ -4,11 +4,14 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from data.db import stores
 
+from schemas import StoreSchema
+
 StoreBlueprint = Blueprint('stores', __name__, description="Operations on stores")
 
 
 @StoreBlueprint.route('/stores/<string:store_id>')
 class Stores(MethodView):
+    @StoreBlueprint.response(200, StoreSchema())
     def get(self, store_id: str):
         try:
             return stores[store_id]
@@ -24,15 +27,13 @@ class Stores(MethodView):
 
 @StoreBlueprint.route('/stores')
 class StoresList(MethodView):
+    @StoreBlueprint.response(200, StoreSchema(many=True))
     def get(self):
         return {"stores": list(stores.values())}
 
-    def post(self):
-        store_data = request.get_json()
-
-        if "name" not in store_data:
-            abort(400, message="Missing 'name' parameter")
-
+    @StoreBlueprint.arguments(StoreSchema)
+    @StoreBlueprint.response(201, StoreSchema())
+    def post(self, store_data):
         for store in stores.values():
             if store["name"] == store_data["name"]:
                 abort(400, message="Duplicate name")

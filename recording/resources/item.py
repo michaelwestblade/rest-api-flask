@@ -19,7 +19,13 @@ class Items(MethodView):
 
     def delete(self, item_id: str):
         item = ItemModel.query.get_or_404(item_id)
-        raise NotImplementedError("DELETE not implemented")
+        try:
+            db.session.delete(item)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print(e)
+            abort(500)
 
     @ItemBlueprint.arguments(ItemUpdateSchema)
     @ItemBlueprint.response(200, ItemSchema())
@@ -48,8 +54,7 @@ class Items(MethodView):
 class ItemsList(MethodView):
     @ItemBlueprint.response(200, ItemSchema(many=True))
     def get(self):
-        items = ItemModel.query.all()
-        return list(items)
+        return ItemModel.query.all()
 
     @ItemBlueprint.arguments(ItemSchema)
     @ItemBlueprint.response(201, ItemSchema())

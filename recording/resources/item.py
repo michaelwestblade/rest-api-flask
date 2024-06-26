@@ -24,8 +24,23 @@ class Items(MethodView):
     @ItemBlueprint.arguments(ItemUpdateSchema)
     @ItemBlueprint.response(200, ItemSchema())
     def put(self, item_data, item_id: str):
-        item = ItemModel.query.get_or_404(item_id)
-        raise NotImplementedError("DELETE not implemented")
+        item = ItemModel.query.get(item_id)
+        if item:
+            item.price = item_data['price']
+            item.name = item_data['name']
+        else:
+            item = ItemModel(**item_data)
+
+        try:
+            db.session.add(item)
+            db.session.commit()
+            return item
+        except IntegrityError:
+            db.session.rollback()
+            abort(400)
+        except SQLAlchemyError:
+            db.session.rollback()
+            abort(500)
 
 @ItemBlueprint.route('/items')
 class ItemsList(MethodView):

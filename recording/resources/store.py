@@ -34,9 +34,11 @@ class StoresList(MethodView):
         try:
             db.session.add(store)
             db.session.commit()
-        except IntegrityError:
+        except IntegrityError as e:
+            print(e)
             abort(409, message="Store already exists")
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             abort(500, message="Error adding store")
 
         return store, 201

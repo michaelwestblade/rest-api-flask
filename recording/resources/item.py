@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 ItemBlueprint = Blueprint('items', __name__, description="Operations on items")
 
 
-@ItemBlueprint.route('/items/<string:item_id>')
+@ItemBlueprint.route('/items/<int:item_id>')
 class Items(MethodView):
     @ItemBlueprint.response(200, ItemSchema())
     def get(self, item_id: str):
@@ -23,22 +23,24 @@ class Items(MethodView):
 
     @ItemBlueprint.arguments(ItemUpdateSchema)
     @ItemBlueprint.response(200, ItemSchema())
-    def put(self, item_data, item_id: str):
+    def put(self, item_data, item_id: int):
         item = ItemModel.query.get(item_id)
         if item:
             item.price = item_data['price']
             item.name = item_data['name']
         else:
-            item = ItemModel(**item_data)
+            item = ItemModel(id=item_id, **item_data)
 
         try:
             db.session.add(item)
             db.session.commit()
             return item
-        except IntegrityError:
+        except IntegrityError as e:
+            print(e)
             db.session.rollback()
             abort(400)
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             db.session.rollback()
             abort(500)
 

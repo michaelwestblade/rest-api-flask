@@ -9,14 +9,14 @@ from schemas import StoreSchema
 StoreBlueprint = Blueprint('stores', __name__, description="Operations on stores")
 
 
-@StoreBlueprint.route('/stores/<string:store_id>')
+@StoreBlueprint.route('/stores/<int:store_id>')
 class Stores(MethodView):
     @StoreBlueprint.response(200, StoreSchema())
-    def get(self, store_id: str):
+    def get(self, store_id: int):
         store = StoreModel.query.get_or_404(store_id)
         return store
 
-    def delete(self, store_id: str):
+    def delete(self, store_id: int):
         store = StoreModel.query.get_or_404(store_id)
         raise NotImplementedError("DELETE not implemented")
 
